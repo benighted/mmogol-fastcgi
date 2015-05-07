@@ -27,6 +27,10 @@ void setCellNextState(int x, int y, int value);
 
 
 int main(int argc, char *argv[]) {
+    char *buffer;
+    int input, mode, x, y;
+
+    buffer[0] = 0;
     srand(time(NULL));
 
     // start game
@@ -39,6 +43,31 @@ int main(int argc, char *argv[]) {
     while(FCGI_Accept() >= 0) {
         printf("Content-Type: text/plain");
         printf("\r\n\r\n");
+
+        // syntax: <s|k><x pos>,<y pos><;| >
+        //         where s = spawn, k = kill
+        // ex: s11,28 s12,29 s10,30 s11,30 s12,30;
+        while ((input = fgetc(stdin)) != EOF) {
+            switch (input) {
+                case 's':
+                case 'k':
+                    mode = c;
+                    break;
+                case ',':
+                    x = atoi(buffer);
+                    buffer[0] = 0;
+                    break;
+                case ' ':
+                case ';':
+                    y = atoi(buffer);
+                    buffer[0] = 0;
+                    setCellState(x, y, mode == 's' ? 1 : 0);
+                    break;
+                default:
+                    strcat(buffer, (char *) &c);
+                    break;
+            }
+        }
 
         printGame();
     }
